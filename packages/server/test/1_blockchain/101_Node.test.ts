@@ -96,6 +96,9 @@ describe("Test of Node", function () {
                     "a5c19fed89739383",
                     [new PurchaseDetails("PID001", BigNumber.from(idx + 1), BigNumber.from(300))],
                     "0x4501F7aF010Cef3DcEaAfbc7Bfb2B39dE57df54d",
+                    "0x4501F7aF010Cef3DcEaAfbc7Bfb2B39dE57df54d",
+                    "",
+                    "0x4501F7aF010Cef3DcEaAfbc7Bfb2B39dE57df54d",
                     ""
                 )
             );

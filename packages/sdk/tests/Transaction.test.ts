@@ -36,13 +36,17 @@ describe("NewTransaction", () => {
             phoneHash,
             [new PurchaseDetails("PID001", BigNumber.from(123), BigNumber.from(300))],
             "0x4501F7aF010Cef3DcEaAfbc7Bfb2B39dE57df54d",
+            "",
+            "",
+            "",
+            "",
             ""
         );
         await tx.sign(signer1);
 
         assert.strictEqual(
             hashFull(tx).toString(),
-            "0x933f736bdf9dda0092d05ac91066fd3048260094ace55221761fbd3b923a1ca6"
+            "0xff5793f607c2836e99da571190f9b7fed0f51823073352e8b467459b49245990"
         );
     });
 
@@ -61,6 +65,9 @@ describe("NewTransaction", () => {
             phoneHash,
             [new PurchaseDetails("PID001", BigNumber.from(123), BigNumber.from(300))],
             "0x4501F7aF010Cef3DcEaAfbc7Bfb2B39dE57df54d",
+            "",
+            "",
+            "",
             ""
         );
         await tx.sign(signer1);
@@ -84,13 +91,16 @@ describe("NewTransaction", () => {
             phoneHash,
             [new PurchaseDetails("PID001", BigNumber.from(123), BigNumber.from(300))],
             "0x4501F7aF010Cef3DcEaAfbc7Bfb2B39dE57df54d",
+            "",
+            "",
+            "",
             ""
         );
 
         await tx.sign(signer1);
         assert.strictEqual(
             tx.signature,
-            "0x4929e7562eb3379bdfb74441cb38c6919a07df903fb3904b100b2c973bb7e61e5b1a84f4d9a044af255bd003093c2f258ed634a52ea7cad0fb29e0a49dc719951b"
+            "0x6ff15db25fd9cd992e17755036905a0562b3e19703b5efe1fa6a0573ed86a22d39a4531dfd4a19ca27c1e066c277731bc76f95258e237f82d0dbcd7b1789e5701b"
         );
         assert.ok(!tx.verify(signer2.address));
         assert.ok(tx.verify(signer1.address));
@@ -99,7 +109,7 @@ describe("NewTransaction", () => {
         await tx.sign(signer2);
         assert.strictEqual(
             tx.signature,
-            "0x0398eb6ba47149acff4bafe9b756fa60b4f97877bc88b02da70fd60916430c3e6e00f532abe412309c914e607402d4177aa526b52f6379bfb0d0425744f3839f1c"
+            "0xc1634936c9ec8884aab59c027689ca5d051add8d498ee2bf9e4e4dac2cb2d8d934ae3c9d1c6fbeebda80e89e862d67e8775d78a77eeb5d28ad01f0c9c9e19c441c"
         );
         assert.ok(!tx.verify(signer1.address));
         assert.ok(tx.verify(signer2.address));

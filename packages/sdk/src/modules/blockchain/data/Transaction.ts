@@ -49,9 +49,12 @@ export interface INewTransaction {
     userPhoneHash: string;
     details: IPurchaseDetails[];
     sender: string;
+    collector: string;
+    collectorSignature: string;
+    agent: string;
+    purchaseSignature: string;
     signer: string;
     signature: string;
-    purchaseSignature: string;
 }
 
 export interface ICancelTransaction {
@@ -61,9 +64,12 @@ export interface ICancelTransaction {
     timestamp: bigint;
     waiting: bigint;
     sender: string;
+    collector: string;
+    collectorSignature: string;
+    agent: string;
+    purchaseSignature: string;
     signer: string;
     signature: string;
-    purchaseSignature: string;
 }
 
 /**
@@ -86,9 +92,12 @@ export class NewTransaction implements INewTransaction {
     public userPhoneHash: string;
     public details: PurchaseDetails[];
     public sender: string;
+    public collector: string;
+    public collectorSignature: string;
+    public agent: string;
+    public purchaseSignature: string;
     public signer: string;
     public signature: string;
-    public purchaseSignature: string;
 
     /**
      * Constructor
@@ -107,6 +116,9 @@ export class NewTransaction implements INewTransaction {
         userPhoneHash: string,
         details: PurchaseDetails[],
         sender: string,
+        collector: string,
+        collectorSignature: string,
+        agent: string,
         purchaseSignature: string,
         signer?: string,
         signature?: string
@@ -124,6 +136,9 @@ export class NewTransaction implements INewTransaction {
         this.userAccount = userAccount;
         this.userPhoneHash = userPhoneHash;
         this.sender = sender;
+        this.collector = collector;
+        this.collectorSignature = collectorSignature;
+        this.agent = agent;
         this.purchaseSignature = purchaseSignature;
         if (signer !== undefined) this.signer = signer;
         else this.signer = "";
@@ -167,6 +182,9 @@ export class NewTransaction implements INewTransaction {
             value.userPhoneHash,
             details,
             value.sender,
+            value.collector,
+            value.collectorSignature,
+            value.agent,
             value.purchaseSignature,
             value.signer,
             value.signature
@@ -191,6 +209,8 @@ export class NewTransaction implements INewTransaction {
         hashPart(this.userAccount, buffer);
         hashPart(this.userPhoneHash, buffer);
         hashPart(this.sender, buffer);
+        hashPart(this.collector, buffer);
+        hashPart(this.agent, buffer);
         hashPart(this.signer, buffer);
         hashPart(this.details.length, buffer);
         for (const elem of this.details) {
@@ -216,6 +236,9 @@ export class NewTransaction implements INewTransaction {
             userAccount: this.userAccount,
             userPhoneHash: this.userPhoneHash,
             sender: this.sender,
+            collector: this.collector,
+            collectorSignature: this.collectorSignature,
+            agent: this.agent,
             purchaseSignature: this.purchaseSignature,
             signer: this.signer,
             signature: this.signature,
@@ -241,6 +264,9 @@ export class NewTransaction implements INewTransaction {
             this.userPhoneHash,
             this.details,
             this.sender,
+            this.collector,
+            this.collectorSignature,
+            this.agent,
             this.purchaseSignature,
             this.signer,
             this.signature
@@ -295,9 +321,12 @@ export class CancelTransaction implements ICancelTransaction {
     public timestamp: bigint;
     public waiting: bigint;
     public sender: string;
+    public collector: string;
+    public collectorSignature: string;
+    public agent: string;
+    public purchaseSignature: string;
     public signer: string;
     public signature: string;
-    public purchaseSignature: string;
 
     /**
      * Constructor
@@ -308,6 +337,9 @@ export class CancelTransaction implements ICancelTransaction {
         timestamp: bigint,
         waiting: bigint,
         sender: string,
+        collector: string,
+        collectorSignature: string,
+        agent: string,
         purchaseSignature: string,
         signer?: string,
         signature?: string
@@ -320,6 +352,9 @@ export class CancelTransaction implements ICancelTransaction {
         this.sender = sender;
         if (signer !== undefined) this.signer = signer;
         else this.signer = "";
+        this.collector = collector;
+        this.collectorSignature = collectorSignature;
+        this.agent = agent;
         this.purchaseSignature = purchaseSignature;
         if (signature !== undefined) this.signature = signature;
         else this.signature = "";
@@ -346,6 +381,9 @@ export class CancelTransaction implements ICancelTransaction {
             BigInt(value.timestamp),
             BigInt(value.waiting),
             value.sender,
+            value.collector,
+            value.collectorSignature,
+            value.agent,
             value.purchaseSignature,
             value.signer,
             value.signature
@@ -363,6 +401,8 @@ export class CancelTransaction implements ICancelTransaction {
         hashPart(this.timestamp, buffer);
         hashPart(this.waiting, buffer);
         hashPart(this.sender, buffer);
+        hashPart(this.collector, buffer);
+        hashPart(this.agent, buffer);
         hashPart(this.signer, buffer);
     }
 
@@ -377,6 +417,9 @@ export class CancelTransaction implements ICancelTransaction {
             timestamp: this.timestamp.toString(),
             waiting: this.waiting.toString(),
             sender: this.sender,
+            collector: this.collector,
+            collectorSignature: this.collectorSignature,
+            agent: this.agent,
             purchaseSignature: this.purchaseSignature,
             signer: this.signer,
             signature: this.signature,
@@ -393,6 +436,9 @@ export class CancelTransaction implements ICancelTransaction {
             this.timestamp,
             this.waiting,
             this.sender,
+            this.collector,
+            this.collectorSignature,
+            this.agent,
             this.purchaseSignature,
             this.signer,
             this.signature

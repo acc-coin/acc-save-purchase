@@ -66,11 +66,11 @@ setting:
     - sender: "${SENDER0}"
       collectors:
         - "${COLLECTOR0}"
-      delegate: "${DELEGATE_KEY0}"
+      agent: "${AGENT_KEY0}"
     - sender: "${SENDER1}"
       collectors:
         - "${COLLECTOR1}"
-      delegate: "${DELEGATE_KEY1}"
+      agent: "${AGENT_KEY1}"
   relayEndpoint: "${RELAY_ENDPOINT}"
   relayAccessKey: "${RELAY_ACCESS_KEY}"
   smsEndpoint: "${SMS_ENDPOINT}"

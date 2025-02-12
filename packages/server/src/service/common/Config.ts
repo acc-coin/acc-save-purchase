@@ -660,7 +660,7 @@ export class ContractConfig implements IContractsConfig {
 export interface IPurchaseSigner {
     sender: string;
     collectors: string[];
-    delegate: Wallet;
+    agent: Wallet;
 }
 
 export interface ISetting {
@@ -732,7 +732,7 @@ export class Setting implements ISetting {
                 return {
                     sender: m.sender.toLowerCase(),
                     collectors: m.collectors.map((n: string) => n.toLowerCase()),
-                    delegate: new Wallet(m.delegate),
+                    agent: new Wallet(m.agent),
                 };
             });
         }
@@ -780,9 +780,9 @@ export class Setting implements ISetting {
         } else return false;
     }
 
-    public getDelegate(sender: string): Wallet | undefined {
+    public getAgent(sender: string): Wallet | undefined {
         const purchaseSigner = this.getPurchaseSigner(sender);
         if (purchaseSigner === undefined) return undefined;
-        return purchaseSigner.delegate;
+        return purchaseSigner.agent;
     }
 }

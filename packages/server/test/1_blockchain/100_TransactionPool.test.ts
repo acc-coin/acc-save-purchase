@@ -81,6 +81,9 @@ describe("TransactionPool", () => {
                     "",
                     [new PurchaseDetails("PID001", BigNumber.from(10000), BigNumber.from(300))],
                     m,
+                    "0x4501F7aF010Cef3DcEaAfbc7Bfb2B39dE57df54d",
+                    "",
+                    "0x4501F7aF010Cef3DcEaAfbc7Bfb2B39dE57df54d",
                     ""
                 )
         );

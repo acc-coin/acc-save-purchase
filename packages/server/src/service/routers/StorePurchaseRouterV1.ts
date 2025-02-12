@@ -303,6 +303,9 @@ export class StorePurchaseRouterV1 {
                 userPhoneHash,
                 details,
                 accessKeyItem.sender,
+                this.publisherSigner.address,
+                purchaseSignature,
+                this.publisherSigner.address,
                 purchaseSignature,
                 this.publisherSigner.address
             );
@@ -516,6 +519,9 @@ export class StorePurchaseRouterV1 {
                 BigInt(req.body.timestamp),
                 BigInt(waiting),
                 accessKeyItem.sender,
+                this.publisherSigner.address,
+                purchaseSignature,
+                this.publisherSigner.address,
                 purchaseSignature,
                 this.publisherSigner.address
             );

@@ -25,6 +25,8 @@ describe("Test of Storage", () => {
             [new PurchaseDetails("PID001", BigNumber.from(123), BigNumber.from(300))],
             "0x19dCAc1131Dfa2fdBbf992261d54c03dDE616D75",
             "",
+            "0x64ca000fe0fbb7ca96274dc836e3b286863b24fc47576748f0945ce3d07f58ed47f2dda151cbc218d05de2d2363cef6444ab628670d2bc9cf7674862e6dc51c81b",
+            "",
             "0x64ca000fe0fbb7ca96274dc836e3b286863b24fc47576748f0945ce3d07f58ed47f2dda151cbc218d05de2d2363cef6444ab628670d2bc9cf7674862e6dc51c81b"
         )
     );
@@ -45,7 +47,9 @@ describe("Test of Storage", () => {
             [new PurchaseDetails("PID001", BigNumber.from(123), BigNumber.from(300))],
             "0xc2DfB49ad9BF96b541939EDABdDeBd63d85e8d70",
             "",
-            "0x8a65d1c86d40a468a428d8ade17a795b49c0fc4356159d7208af97d19206f59766f7adbf1a348605d58c0a564098d805b0934e131343d45554b7d54501a83b0d1c"
+            "0x8a65d1c86d40a468a428d8ade17a795b49c0fc4356159d7208af97d19206f59766f7adbf1a348605d58c0a564098d805b0934e131343d45554b7d54501a83b0d1c",
+            "",
+            "0x64ca000fe0fbb7ca96274dc836e3b286863b24fc47576748f0945ce3d07f58ed47f2dda151cbc218d05de2d2363cef6444ab628670d2bc9cf7674862e6dc51c81b"
         )
     );
 

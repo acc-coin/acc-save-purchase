@@ -40,7 +40,7 @@ describe("Test of Config", () => {
 
         const signer = config.setting.getPurchaseSigner("0x4501F7aF010Cef3DcEaAfbc7Bfb2B39dE57df54d");
         assert.ok(signer !== undefined);
-        assert.deepStrictEqual(signer.delegate.address, "0x60A46cb28cFE31345bcC62cE6Fe4016a7ff2c4cf");
+        assert.deepStrictEqual(signer.agent.address, "0x60A46cb28cFE31345bcC62cE6Fe4016a7ff2c4cf");
 
         assert.deepStrictEqual(
             config.setting.isCollector(

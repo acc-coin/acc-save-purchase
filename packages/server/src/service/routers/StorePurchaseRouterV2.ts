@@ -196,7 +196,7 @@ export class StorePurchaseRouterV2 {
             const currency = String(req.body.purchase.currency).trim();
             const loyaltyValue = BigNumber.from(req.body.purchase.loyalty);
             const sender = String(req.body.purchase.sender).trim();
-            const purchaseSignature = String(req.body.purchase.purchaseSignature).trim();
+            const collectorSignature = String(req.body.purchase.purchaseSignature).trim();
 
             const message = ContractUtils.getNewPurchaseDataMessage(
                 purchaseId,
@@ -210,20 +210,20 @@ export class StorePurchaseRouterV2 {
                 hre.network.config.chainId
             );
 
-            const collector = ContractUtils.getAddressOfSigner(message, purchaseSignature);
+            const collector = ContractUtils.getAddressOfSigner(message, collectorSignature);
             console.log(`signerAddress: ${collector}`);
             if (!this._config.setting.isCollector(sender, collector)) {
                 console.log("Failed to validate signature");
                 return res.status(200).json(ResponseMessage.getErrorMessage("2011"));
             }
-            const delegate = this._config.setting.getDelegate(sender);
-            if (delegate === undefined) {
+            const agent = this._config.setting.getAgent(sender);
+            if (agent === undefined) {
                 console.log("Failed to validate signature");
                 return res.status(200).json(ResponseMessage.getErrorMessage("2011"));
             }
-            console.log(`delegate: ${delegate.address}`);
-            const newPurchaseSignature =
-                delegate.address !== collector ? await ContractUtils.signMessage(delegate, message) : purchaseSignature;
+            console.log(`delegate: ${agent.address}`);
+            const agentSignature =
+                agent.address !== collector ? await ContractUtils.signMessage(agent, message) : collectorSignature;
 
             const details: PurchaseDetails[] = [];
             for (const elem of req.body.details) {
@@ -273,7 +273,10 @@ export class StorePurchaseRouterV2 {
                 userPhoneHash,
                 details,
                 sender,
-                newPurchaseSignature,
+                collector,
+                collectorSignature,
+                agent.address,
+                agentSignature,
                 this.publisherSigner.address
             );
             await tx.sign(this.publisherSigner);
@@ -450,7 +453,7 @@ export class StorePurchaseRouterV2 {
      * @private
      */
     private async postCancelPurchaseV2(req: express.Request, res: express.Response) {
-        logger.http(`POST /v1/tx/purchase/cancel ${req.ip}:${JSON.stringify(req.body)}`);
+        logger.http(`POST /v2/tx/purchase/cancel ${req.ip}:${JSON.stringify(req.body)}`);
 
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -462,9 +465,9 @@ export class StorePurchaseRouterV2 {
             const purchaseId = String(req.body.purchase.purchaseId).trim();
             const sender = String(req.body.purchase.sender).trim();
             const message = ContractUtils.getCancelPurchaseDataMessage(purchaseId, sender, hre.network.config.chainId);
-            const purchaseSignature = String(req.body.purchase.purchaseSignature).trim();
+            const collectorSignature = String(req.body.purchase.purchaseSignature).trim();
 
-            const collector = ContractUtils.getAddressOfSigner(message, purchaseSignature);
+            const collector = ContractUtils.getAddressOfSigner(message, collectorSignature);
             if (!this._config.setting.isCollector(sender, collector)) {
                 return res.status(200).json(ResponseMessage.getErrorMessage("2011"));
             }
@@ -473,12 +476,12 @@ export class StorePurchaseRouterV2 {
             if (purchaseSigner === undefined) {
                 return res.status(200).json(ResponseMessage.getErrorMessage("2011"));
             }
-            const delegate = this._config.setting.getDelegate(sender);
-            if (delegate === undefined) {
+            const agent = this._config.setting.getAgent(sender);
+            if (agent === undefined) {
                 return res.status(200).json(ResponseMessage.getErrorMessage("2011"));
             }
-            const newPurchaseSignature =
-                delegate.address !== collector ? await ContractUtils.signMessage(delegate, message) : purchaseSignature;
+            const agentSignature =
+                agent.address !== collector ? await ContractUtils.signMessage(agent, message) : collectorSignature;
 
             const timestamp = BigInt(String(req.body.others.timestamp).trim());
             const waiting = BigInt(String(req.body.others.waiting).trim());
@@ -489,7 +492,10 @@ export class StorePurchaseRouterV2 {
                 timestamp,
                 waiting,
                 sender,
-                newPurchaseSignature,
+                collector,
+                collectorSignature,
+                agent.address,
+                agentSignature,
                 this.publisherSigner.address
             );
 

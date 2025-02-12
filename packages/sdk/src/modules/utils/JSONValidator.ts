@@ -127,6 +127,15 @@ export class JSONValidator {
                     sender: {
                         type: "string",
                     },
+                    collector: {
+                        type: "string",
+                    },
+                    collectorSignature: {
+                        type: "string",
+                    },
+                    agent: {
+                        type: "string",
+                    },
                     purchaseSignature: {
                         type: "string",
                     },
@@ -180,6 +189,15 @@ export class JSONValidator {
                         type: "string",
                     },
                     sender: {
+                        type: "string",
+                    },
+                    collector: {
+                        type: "string",
+                    },
+                    collectorSignature: {
+                        type: "string",
+                    },
+                    agent: {
                         type: "string",
                     },
                     purchaseSignature: {

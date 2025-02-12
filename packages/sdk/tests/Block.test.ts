@@ -36,6 +36,9 @@ describe("Test of Block", () => {
                     phoneHash,
                     [new PurchaseDetails("PID001", BigNumber.from(idx + 1), BigNumber.from(300))],
                     "0x4501F7aF010Cef3DcEaAfbc7Bfb2B39dE57df54d",
+                    "",
+                    "",
+                    "",
                     ""
                 )
             );
@@ -62,6 +65,9 @@ describe("Test of Block", () => {
                 phoneHash,
                 [new PurchaseDetails("PID001", BigNumber.from(1000000000), BigNumber.from(300))],
                 "0x4501F7aF010Cef3DcEaAfbc7Bfb2B39dE57df54d",
+                "",
+                "",
+                "",
                 ""
             ),
             new NewTransaction(
@@ -78,6 +84,9 @@ describe("Test of Block", () => {
                 phoneHash,
                 [new PurchaseDetails("PID001", BigNumber.from(1000000000), BigNumber.from(300))],
                 "0x4501F7aF010Cef3DcEaAfbc7Bfb2B39dE57df54d",
+                "",
+                "",
+                "",
                 ""
             ),
             new NewTransaction(
@@ -94,6 +103,9 @@ describe("Test of Block", () => {
                 phoneHash,
                 [new PurchaseDetails("PID001", BigNumber.from(1000000000), BigNumber.from(300))],
                 "0x4501F7aF010Cef3DcEaAfbc7Bfb2B39dE57df54d",
+                "",
+                "",
+                "",
                 ""
             ),
             new NewTransaction(
@@ -110,6 +122,9 @@ describe("Test of Block", () => {
                 phoneHash,
                 [new PurchaseDetails("PID001", BigNumber.from(1000000000), BigNumber.from(300))],
                 "0x4501F7aF010Cef3DcEaAfbc7Bfb2B39dE57df54d",
+                "",
+                "",
+                "",
                 ""
             ),
             new NewTransaction(
@@ -126,6 +141,9 @@ describe("Test of Block", () => {
                 phoneHash,
                 [new PurchaseDetails("PID001", BigNumber.from(1000000000), BigNumber.from(300))],
                 "0x4501F7aF010Cef3DcEaAfbc7Bfb2B39dE57df54d",
+                "",
+                "",
+                "",
                 ""
             ),
             new CancelTransaction(
@@ -134,6 +152,9 @@ describe("Test of Block", () => {
                 BigInt(1668044556),
                 BigInt(0),
                 "0x4501F7aF010Cef3DcEaAfbc7Bfb2B39dE57df54d",
+                "",
+                "",
+                "",
                 ""
             ),
         ];
