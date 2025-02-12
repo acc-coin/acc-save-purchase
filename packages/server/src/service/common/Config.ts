@@ -673,6 +673,7 @@ export interface ISetting {
     messageEnable: boolean;
     timezone: string;
     allowedShopIdPrefix: string;
+    supportAPIV1: boolean;
 }
 
 export interface IAccessKeyItem {
@@ -691,6 +692,7 @@ export class Setting implements ISetting {
     public messageEnable: boolean;
     public timezone: string;
     public allowedShopIdPrefix: string;
+    public supportAPIV1: boolean;
 
     /**
      * Constructor
@@ -712,6 +714,7 @@ export class Setting implements ISetting {
         this.messageEnable = defaults.messageEnable;
         this.timezone = defaults.timezone;
         this.allowedShopIdPrefix = defaults.allowedShopIdPrefix;
+        this.supportAPIV1 = defaults.supportAPIV1;
     }
 
     public readFromObject(config: ISetting) {
@@ -741,6 +744,8 @@ export class Setting implements ISetting {
             this.messageEnable = config.messageEnable.toString().toLowerCase() === "true";
         if (config.timezone !== undefined) this.timezone = config.timezone;
         if (config.allowedShopIdPrefix !== undefined) this.allowedShopIdPrefix = config.allowedShopIdPrefix;
+        if (config.supportAPIV1 !== undefined)
+            this.supportAPIV1 = config.supportAPIV1.toString().toLowerCase() === "true";
     }
 
     /**
@@ -758,6 +763,7 @@ export class Setting implements ISetting {
             messageEnable: "false",
             timezone: "Asia/Seoul",
             allowedShopIdPrefix: "0x0001",
+            supportAPIV1: true,
         } as unknown as ISetting;
     }
 

@@ -78,3 +78,4 @@ setting:
   messageEnable: "${MESSAGE_ENABLE}"
   timezone: "Asia/Seoul"
   allowedShopIdPrefix: "0x0001"
+  supportAPIV1: true

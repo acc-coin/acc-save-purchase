@@ -16,6 +16,7 @@ export class ResponseMessage {
         ["3004", "The hash length is not valid"],
         ["3005", "No corresponding block hash key value"],
         ["3006", "Size are allowed from 1 to 32"],
+        ["3007", "The endpoint of API version 1 is not supported"],
         ["3050", "Sequence is different from the expected value"],
         ["3051", "The access key entered is not valid"],
         ["3072", "The shopId is invalid"],

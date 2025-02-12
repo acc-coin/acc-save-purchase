@@ -77,3 +77,4 @@ setting:
   smsAccessKey: "${SMS_ACCESS_KEY}"
   messageEnable: "${MESSAGE_ENABLE}"
   allowedShopIdPrefix: "0x0001"
+  supportAPIV1: true

@@ -178,6 +178,10 @@ export class StorePurchaseRouterV1 {
     private async getSequence(req: express.Request, res: express.Response) {
         logger.http(`GET /v1/tx/sequence`);
 
+        if (!this._config.setting.supportAPIV1) {
+            return res.json(ResponseMessage.getErrorMessage("3007"));
+        }
+
         try {
             const sequence = await this.storage.getLastSequence();
             return res.status(200).json(StorePurchaseRouterV1.makeResponseData(0, { sequence }));
@@ -197,6 +201,10 @@ export class StorePurchaseRouterV1 {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(200).json(ResponseMessage.getErrorMessage("2001", { validation: errors.array() }));
+        }
+
+        if (!this._config.setting.supportAPIV1) {
+            return res.json(ResponseMessage.getErrorMessage("3007"));
         }
 
         const shopId = String(req.body.shopId).trim();
@@ -480,6 +488,10 @@ export class StorePurchaseRouterV1 {
             return res.status(200).json(ResponseMessage.getErrorMessage("2001", { validation: errors.array() }));
         }
 
+        if (!this._config.setting.supportAPIV1) {
+            return res.json(ResponseMessage.getErrorMessage("3007"));
+        }
+
         let accessKey = req.get("Authorization");
         if (accessKey === undefined) accessKey = String(req.body.accessKey).trim();
         const accessKeyItem = this.accessKey.find((m) => m.key === accessKey);
@@ -532,328 +544,5 @@ export class StorePurchaseRouterV1 {
         res.set("Content-Type", this._metrics.contentType());
         this._metrics.add("status", 1);
         res.end(await this._metrics.metrics());
-    }
-
-    /**
-     * POST /v2/tx/purchase/new
-     * @private
-     */
-    private async postNewPurchaseV2(req: express.Request, res: express.Response) {
-        logger.http(`POST /v2/tx/purchase/new ${req.ip}:${JSON.stringify(req.body)}`);
-
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(200).json(ResponseMessage.getErrorMessage("2001", { validation: errors.array() }));
-        }
-
-        const shopId = String(req.body.purchase.shopId).trim();
-        if (shopId.substring(0, 6) !== this._config.setting.allowedShopIdPrefix) {
-            return res.status(200).json(ResponseMessage.getErrorMessage("3072"));
-        }
-
-        let userAccount = String(req.body.purchase.userAccount).trim();
-        const userPhoneHash = String(req.body.purchase.userPhoneHash).trim();
-
-        try {
-            const details: PurchaseDetails[] = [];
-            for (const elem of req.body.details) {
-                if (elem.productId !== undefined && elem.amount !== undefined && elem.providePercent !== undefined) {
-                    details.push(
-                        new PurchaseDetails(
-                            elem.productId,
-                            BigNumber.from(elem.amount),
-                            BigNumber.from(elem.providePercent)
-                        )
-                    );
-                }
-            }
-            const client = new RelayClient(this._config);
-            if (this.systemInfo === undefined) this.systemInfo = await client.getSystemInfo();
-            const shopInfo = await client.getShopInfo(shopId);
-            if (shopInfo !== undefined) {
-                if (shopInfo.status !== 1) {
-                    return res.status(200).json(ResponseMessage.getErrorMessage("2005"));
-                }
-            }
-
-            const totalAmount = BigNumber.from(req.body.others.totalAmount);
-            const cashAmount = BigNumber.from(req.body.purchase.cashAmount);
-            const sum = details.reduce((previous, current) => previous.add(current.amount), BigNumber.from(0));
-            if (!totalAmount.eq(sum)) {
-                return res.status(200).json(ResponseMessage.getErrorMessage("2004"));
-            }
-            const purchaseId = String(req.body.purchase.purchaseId).trim();
-            const nextSequence = await this.storage.getNextSequence();
-            const currency = String(req.body.purchase.currency).trim();
-            const timestamp = BigInt(String(req.body.others.timestamp).trim());
-            const waiting = BigInt(String(req.body.others.waiting).trim());
-            const loyaltyValue = BigNumber.from(req.body.purchase.loyalty);
-            const loyaltyCalculated = getLoyaltyInTransaction(cashAmount, totalAmount, details);
-
-            const sender = String(req.body.purchase.sender).trim();
-            const purchaseSignature = String(req.body.purchase.purchaseSignature).trim();
-            const assistant = await client.getAssistant(sender);
-            const message = ContractUtils.getNewPurchaseDataMessage(
-                purchaseId,
-                cashAmount,
-                loyaltyValue,
-                currency,
-                shopId,
-                userAccount,
-                userPhoneHash,
-                sender,
-                hre.network.config.chainId
-            );
-            if (
-                !ContractUtils.verifyMessage(sender, message, purchaseSignature) &&
-                !ContractUtils.verifyMessage(assistant, message, purchaseSignature)
-            ) {
-                return res.status(200).json(ResponseMessage.getErrorMessage("2011"));
-            }
-
-            if (!loyaltyCalculated.eq(loyaltyValue)) {
-                return res.status(200).json(ResponseMessage.getErrorMessage("2012"));
-            }
-            const tx: NewTransaction = new NewTransaction(
-                nextSequence,
-                purchaseId,
-                timestamp,
-                waiting,
-                totalAmount,
-                cashAmount,
-                loyaltyValue,
-                currency,
-                shopId,
-                userAccount,
-                userPhoneHash,
-                details,
-                sender,
-                purchaseSignature,
-                this.publisherSigner.address
-            );
-            await tx.sign(this.publisherSigner);
-            await this.pool.add(DBTransaction.make(tx));
-            logger.http(`POST /v2/tx/purchase/new transaction: ${JSON.stringify(tx)}`);
-
-            let loyaltyResponse: ILoyaltyResponse | undefined;
-
-            const loyaltyPoint = await client.convertCurrency(loyaltyValue, currency, "point");
-            if (loyaltyPoint !== undefined) {
-                if (userAccount !== AddressZero) {
-                    const result = await client.getBalanceOfAccount(userAccount);
-
-                    if (result !== undefined) {
-                        loyaltyResponse = {
-                            loyaltyValue,
-                            loyaltyPoint,
-                            account: {
-                                accountType: "address",
-                                account: userAccount,
-                                currentBalance: BigNumber.from(result.balance),
-                                loyaltyToBeProvided: loyaltyPoint,
-                            },
-                        };
-                    }
-                } else if (userPhoneHash !== "") {
-                    const result = await client.getBalanceOfPhoneHash(userPhoneHash);
-
-                    if (result !== undefined) {
-                        if (result.account !== undefined && result.account !== AddressZero) {
-                            userAccount = result.account;
-                            loyaltyResponse = {
-                                loyaltyValue,
-                                loyaltyPoint,
-                                account: {
-                                    accountType: "address",
-                                    account: userAccount,
-                                    currentBalance: BigNumber.from(result.balance),
-                                    loyaltyToBeProvided: loyaltyPoint,
-                                },
-                            };
-                        } else {
-                            loyaltyResponse = {
-                                loyaltyValue,
-                                loyaltyPoint,
-                                account: {
-                                    accountType: "phone",
-                                    account: AddressZero,
-                                    currentBalance: BigNumber.from(result.balance),
-                                    loyaltyToBeProvided: loyaltyPoint,
-                                },
-                            };
-                        }
-                    }
-                }
-
-                if (loyaltyResponse) {
-                    if (loyaltyResponse.loyaltyValue.gte(1)) {
-                        const time = moment(new Date(new Date().getTime() + Number(waiting) * 1000))
-                            .tz(this._config.setting.timezone)
-                            .format();
-                        if (loyaltyResponse.account.accountType === "address") {
-                            const mobileInfo = await client.getMobileInfo(loyaltyResponse.account.account);
-                            const precision = this.systemInfo !== undefined ? this.systemInfo.point.precision : 2;
-                            const language =
-                                mobileInfo !== undefined
-                                    ? mobileInfo.language
-                                    : this.systemInfo !== undefined
-                                    ? this.systemInfo.language
-                                    : "ko";
-                            const loyaltyToBeProvided = new BOACoin(
-                                BigNumber.from(loyaltyResponse.account.loyaltyToBeProvided)
-                            );
-                            const currentBalance = new BOACoin(BigNumber.from(loyaltyResponse.account.currentBalance));
-                            let contents;
-                            if (language === "ko") {
-                                contents =
-                                    `제공될 일시: ${time}\n` +
-                                    `제공될 포인트의 량: ${loyaltyToBeProvided.toDisplayString(true, precision)}\n` +
-                                    `현재 포인트 잔고: ${currentBalance.toDisplayString(true, precision)}`;
-                            } else {
-                                contents =
-                                    `Time to be provided: ${time}\n` +
-                                    `Amount to be provided: ${loyaltyToBeProvided.toDisplayString(
-                                        true,
-                                        precision
-                                    )} POINT\n` +
-                                    `Current balance: ${currentBalance.toDisplayString(true, precision)} POINT`;
-                            }
-                            if (this._config.setting.messageEnable)
-                                await client.sendPushMessage(userAccount, 0, "Loyalty provided", contents, "provide");
-                            logger.info(`[NOTIFICATION] ${userAccount} ${contents}`);
-                        } else {
-                            const precision = this.systemInfo !== undefined ? this.systemInfo.point.precision : 2;
-                            const language = this.systemInfo !== undefined ? this.systemInfo.language : "ko";
-                            const loyaltyToBeProvided = new BOACoin(
-                                BigNumber.from(loyaltyResponse.account.loyaltyToBeProvided)
-                            );
-                            const currentBalance = new BOACoin(BigNumber.from(loyaltyResponse.account.currentBalance));
-                            let contents;
-                            if (language === "ko") {
-                                contents =
-                                    `제공될 일시: ${time}\n` +
-                                    `제공될 포인트의 량: ${loyaltyToBeProvided.toDisplayString(
-                                        true,
-                                        precision
-                                    )}  (1 POINT = 1 PHP)\n` +
-                                    `현재 포인트 잔고: ${currentBalance.toDisplayString(true, precision)}`;
-                            } else {
-                                contents =
-                                    `Time to be provided: ${time}\n` +
-                                    `Amount to be provided: ${loyaltyToBeProvided.toDisplayString(
-                                        true,
-                                        precision
-                                    )} POINT (1 POINT = 1 PHP)\n` +
-                                    `Current balance: ${currentBalance.toDisplayString(true, precision)} POINT`;
-                            }
-                            if (this._config.setting.messageEnable)
-                                await client.sendSMSMessage(contents, userPhoneHash);
-                            logger.info(`[SMS] ${userPhoneHash} ${contents}`);
-                        }
-                    }
-
-                    await client.sendNewStorePurchase(
-                        tx.purchaseId,
-                        tx.timestamp.toString(),
-                        tx.waiting.toString(),
-                        tx.userAccount,
-                        tx.userPhoneHash,
-                        tx.shopId,
-                        loyaltyValue.toString(),
-                        tx.currency
-                    );
-
-                    return res.json(
-                        StorePurchaseRouterV1.makeResponseData(0, {
-                            tx: tx.toJSON(),
-                            loyalty: {
-                                loyaltyValue: loyaltyResponse.loyaltyValue.toString(),
-                                loyaltyPoint: loyaltyResponse.loyaltyPoint.toString(),
-                                account: {
-                                    accountType: loyaltyResponse.account.accountType,
-                                    account: loyaltyResponse.account.account,
-                                    currentBalance: loyaltyResponse.account.currentBalance.toString(),
-                                    loyaltyToBeProvided: loyaltyResponse.account.loyaltyToBeProvided.toString(),
-                                },
-                            },
-                        })
-                    );
-                } else {
-                    this._metrics.add("success", 1);
-                    return res.json(
-                        StorePurchaseRouterV1.makeResponseData(0, {
-                            tx: tx.toJSON(),
-                            res: { loyalty: loyaltyPoint.toString() },
-                        })
-                    );
-                }
-            } else {
-                this._metrics.add("success", 1);
-                return res.json(
-                    StorePurchaseRouterV1.makeResponseData(0, {
-                        tx: tx.toJSON(),
-                    })
-                );
-            }
-        } catch (error) {
-            logger.error("POST /v2/tx/purchase/new , " + error);
-            this._metrics.add("failure", 1);
-            return res.status(200).json(ResponseMessage.getErrorMessage("6000"));
-        }
-    }
-
-    /**
-     * POST /v2/tx/purchase/cancel
-     * @private
-     */
-    private async postCancelPurchaseV2(req: express.Request, res: express.Response) {
-        logger.http(`POST /v1/tx/purchase/cancel ${req.ip}:${JSON.stringify(req.body)}`);
-
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(200).json(ResponseMessage.getErrorMessage("2001", { validation: errors.array() }));
-        }
-
-        try {
-            const client = new RelayClient(this._config);
-            const purchaseId = String(req.body.purchase.purchaseId).trim();
-            const sender = String(req.body.purchase.sender).trim();
-            const purchaseSignature = String(req.body.purchase.purchaseSignature).trim();
-            const timestamp = BigInt(String(req.body.others.timestamp).trim());
-            const waiting = BigInt(String(req.body.others.waiting).trim());
-            const nextSequence = await this.storage.getNextSequence();
-            const message = ContractUtils.getCancelPurchaseDataMessage(purchaseId, sender, hre.network.config.chainId);
-            const assistant = await client.getAssistant(sender);
-
-            if (
-                !ContractUtils.verifyMessage(sender, message, purchaseSignature) &&
-                !ContractUtils.verifyMessage(assistant, message, purchaseSignature)
-            ) {
-                return res.status(200).json(ResponseMessage.getErrorMessage("2011"));
-            }
-
-            const tx: CancelTransaction = new CancelTransaction(
-                nextSequence,
-                purchaseId,
-                timestamp,
-                waiting,
-                sender,
-                purchaseSignature,
-                this.publisherSigner.address
-            );
-
-            await tx.sign(this.publisherSigner);
-
-            await this.pool.add(DBTransaction.make(tx));
-
-            await client.sendCancelStorePurchase(String(req.body.purchaseId).trim());
-
-            this._metrics.add("success", 1);
-            return res.json(StorePurchaseRouterV1.makeResponseData(0, { tx: tx.toJSON() }));
-        } catch (error) {
-            logger.error("POST /v2/tx/purchase/cancel , " + error);
-            this._metrics.add("failure", 1);
-            return res.status(200).json(ResponseMessage.getErrorMessage("6000"));
-        }
     }
 }
