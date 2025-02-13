@@ -1,4 +1,7 @@
-FROM bosagora/node:18.20-ubuntu-20.04
+FROM node:18-alpine
+
+RUN apk add --update python3 g++ make yarn
+RUN alias python=python3
 
 WORKDIR /app/
 
