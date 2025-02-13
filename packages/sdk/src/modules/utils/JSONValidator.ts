@@ -146,7 +146,7 @@ export class JSONValidator {
                         type: "string",
                     },
                 },
-                additionalProperties: false,
+                additionalProperties: true,
                 required: [
                     "type",
                     "sequence",
@@ -210,7 +210,7 @@ export class JSONValidator {
                         type: "string",
                     },
                 },
-                additionalProperties: false,
+                additionalProperties: true,
                 required: [
                     "type",
                     "sequence",

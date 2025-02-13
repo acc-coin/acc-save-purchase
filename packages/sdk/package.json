@@ -1,6 +1,6 @@
 {
     "name": "acc-save-purchase-sdk",
-    "version": "3.0.1",
+    "version": "3.1.0",
     "description": "The TypeScript DMS Store Purchase SDK library",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
