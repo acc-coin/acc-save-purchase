@@ -26,7 +26,7 @@ export type VerifyPurchaseApiSpec = Tspec.DefineApiSpec<{
                          */
                         timestamp: string;
                         /**
-                         * Cash Amount to be used for payment
+                         * Amount to be used for payment
                          */
                         amount: string;
                         /**
