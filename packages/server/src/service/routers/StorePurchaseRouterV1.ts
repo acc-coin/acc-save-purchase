@@ -242,6 +242,7 @@ export class StorePurchaseRouterV1 {
         if (accessKeyItem === undefined) {
             return res.status(200).json(ResponseMessage.getErrorMessage("3051"));
         }
+        const collector = new Wallet(accessKeyItem.key);
 
         try {
             const details: PurchaseDetails[] = [];
@@ -288,6 +289,7 @@ export class StorePurchaseRouterV1 {
                 accessKeyItem.sender,
                 hre.network.config.chainId
             );
+            const collectorSignature = await ContractUtils.signMessage(collector, message);
             const purchaseSignature = await ContractUtils.signMessage(this.publisherSigner, message);
             const tx: NewTransaction = new NewTransaction(
                 nextSequence,
@@ -303,8 +305,8 @@ export class StorePurchaseRouterV1 {
                 userPhoneHash,
                 details,
                 accessKeyItem.sender,
-                this.publisherSigner.address,
-                purchaseSignature,
+                collector.address,
+                collectorSignature,
                 this.publisherSigner.address,
                 purchaseSignature,
                 this.publisherSigner.address
@@ -501,6 +503,7 @@ export class StorePurchaseRouterV1 {
         if (accessKeyItem === undefined) {
             return res.status(200).json(ResponseMessage.getErrorMessage("3051"));
         }
+        const collector = new Wallet(accessKeyItem.key);
         const waiting = req.body.waiting !== undefined ? Number(req.body.waiting) : accessKeyItem.waiting;
 
         try {
@@ -511,6 +514,7 @@ export class StorePurchaseRouterV1 {
                 accessKeyItem.sender,
                 hre.network.config.chainId
             );
+            const collectorSignature = await ContractUtils.signMessage(collector, message);
             const purchaseSignature = await ContractUtils.signMessage(this.publisherSigner, message);
 
             const tx: CancelTransaction = new CancelTransaction(
@@ -519,8 +523,8 @@ export class StorePurchaseRouterV1 {
                 BigInt(req.body.timestamp),
                 BigInt(waiting),
                 accessKeyItem.sender,
-                this.publisherSigner.address,
-                purchaseSignature,
+                collector.address,
+                collectorSignature,
                 this.publisherSigner.address,
                 purchaseSignature,
                 this.publisherSigner.address
